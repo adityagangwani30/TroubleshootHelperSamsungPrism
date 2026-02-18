@@ -118,33 +118,35 @@ def resize_image(image: np.ndarray, scale_percent: int = 150) -> np.ndarray:
     return cv2.resize(image, dim, interpolation=cv2.INTER_CUBIC)
 
 
-def auto_crop_display(image: np.ndarray, padding: int = 20):
+def auto_crop_display(image: np.ndarray, padding_ratio: float = 0.2):
     """
-    Locate and crop the 7-segment LED display using Color-Intensity Isolation
-    with strict Size & Geometry filtering.
+    Locate and crop the 7-segment LED display using the Dominant Character
+    Cluster algorithm — a generalized approach that works for any error code
+    (e.g., "5E", "Ub", "End", "dC") at any position in the image.
 
-    Pipeline:
-      1. HSV Color Filtering — keeps Sat > 30 AND Val > 150 (removes printed text).
-      2. Brightest Cluster Fallback — threshold at 220+ for white LEDs.
-      3. Horizontal Joining — dilates to merge digit segments.
-      4. Size Gating — rejects contours shorter than 5% of image height (indicator dots)
-         and thin vertical lines (width < 2% of image width).
-      5. Hero Cluster — merges all surviving large contours into one bounding box.
-         If multiple clusters exist, prefers the one highest in the image (top-half bias).
+    Instead of assuming a fixed location, this finds the "Most Significant
+    Text-Like Object" by:
+      1. HSV + Brightness filtering to isolate glowing LED pixels.
+      2. Finding all candidate contours (digits + dots + noise).
+      3. Relative Height filtering — anything < 50% of the tallest is noise.
+      4. Horizontal Grouping — nearby tall contours form one "word" cluster.
+      5. Dynamic padding (percentage-based, not pixel-based) for any resolution.
 
     Args:
         image (np.ndarray): Input BGR or grayscale image.
-        padding (int): Pixels of generous padding around the detected ROI.
+        padding_ratio (float): Padding as fraction of crop height (default 20%).
 
     Returns:
         tuple: (cropped_image, debug_annotated)
             - cropped_image: Cropped from the original unmodified image.
               Returns original image if no valid region is found.
-            - debug_annotated: BGR image with red rects (rejected) and green
-              rect (accepted hero cluster) drawn for debug visualization.
+            - debug_annotated: BGR image with blue boxes (tall digits) and
+              red X's (rejected dots) drawn for debug visualization.
     """
     h, w = image.shape[:2]
     total_area = h * w
+    import logging
+    logger = logging.getLogger(__name__)
 
     # Ensure color image for HSV
     if len(image.shape) == 3:
@@ -152,113 +154,146 @@ def auto_crop_display(image: np.ndarray, padding: int = 20):
     else:
         color_img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
-    # ── Step 1: HSV Color Filtering ────────────────────────────────
+    # ════════════════════════════════════════════════════════════════
+    # PHASE A: Isolate glowing LED pixels (HSV + brightness fallback)
+    # ════════════════════════════════════════════════════════════════
     hsv = cv2.cvtColor(color_img, cv2.COLOR_BGR2HSV)
     lower_bound = np.array([0, 30, 150])
     upper_bound = np.array([180, 255, 255])
     hsv_mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-    # ── Step 2: Brightest Cluster Fallback ─────────────────────────
-    hsv_pixels = cv2.countNonZero(hsv_mask)
-    if hsv_pixels < total_area * 0.001:
+    # Fallback: if HSV finds almost nothing, use raw brightness
+    if cv2.countNonZero(hsv_mask) < total_area * 0.001:
         gray = cv2.cvtColor(color_img, cv2.COLOR_BGR2GRAY)
         _, hsv_mask = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)
 
-    # ── Step 3: Horizontal Joining ─────────────────────────────────
-    h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 5))
-    joined = cv2.dilate(hsv_mask, h_kernel, iterations=2)
+    # ════════════════════════════════════════════════════════════════
+    # STEP 1: Extract All Candidates
+    # ════════════════════════════════════════════════════════════════
+    # Light morphology to connect broken segments within a single digit
+    # but NOT across separate characters
+    connect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    connected = cv2.dilate(hsv_mask, connect_kernel, iterations=1)
+    connected = cv2.morphologyEx(connected, cv2.MORPH_CLOSE, connect_kernel)
 
-    close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-    joined = cv2.morphologyEx(joined, cv2.MORPH_CLOSE, close_kernel)
+    contours, _ = cv2.findContours(connected, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # ── Find all contours ──────────────────────────────────────────
-    contours, _ = cv2.findContours(joined, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Prepare debug annotation image (copy of original with rectangles)
+    # Prepare debug annotation image
     debug_annotated = color_img.copy()
 
-    # ── Step 4: Size Gating — "Big Lights Only" ────────────────────
-    min_height = h * 0.05      # Contour must be ≥ 5% of image height
-    min_width = w * 0.02       # Contour must be ≥ 2% of image width
-    max_area = total_area * 0.50  # Reject panels > 50%
-
-    hero_boxes = []       # Accepted large contours
-    rejected_boxes = []   # Rejected small contours (for debug)
-
-    for cnt in contours:
-        x, y_pos, cw, ch_val = cv2.boundingRect(cnt)
-        box_area = cw * ch_val
-
-        # Reject panels covering > 50% of the image
-        if box_area > max_area:
-            rejected_boxes.append((x, y_pos, cw, ch_val))
-            continue
-
-        # SIZE GATE: reject if too short (indicator dots)
-        if ch_val < min_height:
-            rejected_boxes.append((x, y_pos, cw, ch_val))
-            continue
-
-        # SIZE GATE: reject thin vertical lines (artifacts between buttons)
-        if cw < min_width:
-            rejected_boxes.append((x, y_pos, cw, ch_val))
-            continue
-
-        # This contour is big enough — it's a candidate
-        hero_boxes.append((x, y_pos, cw, ch_val))
-
-    # Draw debug annotations: RED for rejected, will draw GREEN for hero later
-    for (rx, ry, rw, rh) in rejected_boxes:
-        cv2.rectangle(debug_annotated, (rx, ry), (rx + rw, ry + rh), (0, 0, 255), 2)
-
-    if not hero_boxes:
-        # No large contours survived — return original
+    if not contours:
         return image, debug_annotated
 
-    # ── Step 5: Hero Cluster — union bounding box ──────────────────
-    # If we have multiple large contours (e.g., "d" and "C" separately),
-    # check if they're in the same horizontal band (likely same display).
-    # Group by vertical proximity, then pick the topmost group (top-half bias).
+    # Collect all bounding boxes
+    all_boxes = []
+    for cnt in contours:
+        x, y, cw, ch = cv2.boundingRect(cnt)
+        box_area = cw * ch
+        # Skip giant panels (> 50% of image)
+        if box_area > total_area * 0.50:
+            continue
+        # Skip near-zero-area specks
+        if box_area < total_area * 0.0001:
+            continue
+        all_boxes.append((x, y, cw, ch))
 
-    # Sort hero_boxes by y position (top to bottom)
-    hero_boxes.sort(key=lambda b: b[1])
+    if not all_boxes:
+        return image, debug_annotated
 
-    # Group contours that are vertically close (within 2x the tallest height)
+    # ════════════════════════════════════════════════════════════════
+    # STEP 2: Filter by Relative Height — "Big vs Small" Rule
+    # ════════════════════════════════════════════════════════════════
+    max_height = max(b[3] for b in all_boxes)
+    height_threshold = max_height * 0.50  # 50% of tallest = minimum for digits
+
+    tall_boxes = []   # Digit candidates
+    small_boxes = []  # Rejected dots/noise
+
+    for box in all_boxes:
+        x, y, cw, ch = box
+        if ch >= height_threshold:
+            tall_boxes.append(box)
+        else:
+            small_boxes.append(box)
+
+    # ── Debug: draw RED X's on small rejected dots ──
+    for (sx, sy, sw, sh) in small_boxes:
+        cx, cy = sx + sw // 2, sy + sh // 2
+        r = max(sw, sh) // 2 + 2
+        cv2.line(debug_annotated, (cx - r, cy - r), (cx + r, cy + r), (0, 0, 255), 2)
+        cv2.line(debug_annotated, (cx + r, cy - r), (cx - r, cy + r), (0, 0, 255), 2)
+
+    # ── Debug: draw BLUE boxes on tall digit candidates ──
+    for (tx, ty, tw, th) in tall_boxes:
+        cv2.rectangle(debug_annotated, (tx, ty), (tx + tw, ty + th), (255, 180, 0), 2)
+
+    if not tall_boxes:
+        logger.warning("Auto-crop: no tall contours survived height filter.")
+        return image, debug_annotated
+
+    # ════════════════════════════════════════════════════════════════
+    # STEP 3: Horizontal Grouping — "Sentence" Rule
+    # ════════════════════════════════════════════════════════════════
+    # Sort tall contours left-to-right
+    tall_boxes.sort(key=lambda b: b[0])
+
+    # Group contours that are horizontally close
     groups = []
-    current_group = [hero_boxes[0]]
+    current_group = [tall_boxes[0]]
 
-    for i in range(1, len(hero_boxes)):
+    for i in range(1, len(tall_boxes)):
         prev = current_group[-1]
-        curr = hero_boxes[i]
-        prev_bottom = prev[1] + prev[3]
-        gap = curr[1] - prev_bottom
+        curr = tall_boxes[i]
 
-        # If the gap between contours is small, they belong to the same display
-        max_gap = max(prev[3], curr[3]) * 2
-        if gap < max_gap:
+        prev_right = prev[0] + prev[2]  # x + w
+        gap = curr[0] - prev_right       # horizontal gap
+
+        # "Close" = gap is less than the average width of the two contours
+        avg_width = (prev[2] + curr[2]) / 2.0
+        if gap < avg_width * 1.5:
             current_group.append(curr)
         else:
             groups.append(current_group)
             current_group = [curr]
     groups.append(current_group)
 
-    # TOP-HALF BIAS: pick the group with the smallest average y (highest in image)
-    best_group = min(groups, key=lambda g: sum(b[1] for b in g) / len(g))
+    # Pick the group with the MOST members (the error code has 2-4 digits)
+    # In case of tie, pick the one closest to the vertical center
+    center_y = h / 2.0
+    best_group = max(groups, key=lambda g: (
+        len(g),  # Primary: most members
+        -abs(sum(b[1] + b[3] / 2.0 for b in g) / len(g) - center_y)  # Secondary: central
+    ))
 
-    # Compute union bounding box of the best group
+    # ════════════════════════════════════════════════════════════════
+    # STEP 4: The Final Crop
+    # ════════════════════════════════════════════════════════════════
     x_min = min(b[0] for b in best_group)
     y_min = min(b[1] for b in best_group)
     x_max = max(b[0] + b[2] for b in best_group)
     y_max = max(b[1] + b[3] for b in best_group)
 
-    # Draw GREEN rectangle for the hero cluster on debug image
+    crop_h = y_max - y_min
+    crop_w = x_max - x_min
+
+    # ── Validation Check ──
+    aspect = crop_w / crop_h if crop_h > 0 else 0
+    if aspect < 0.2 or aspect > 5.0:
+        logger.warning(
+            f"Auto-crop: suspicious aspect ratio {aspect:.2f} "
+            f"(expected 0.2–5.0). Proceeding anyway."
+        )
+
+    # Draw GREEN rectangle for the final accepted cluster
     cv2.rectangle(debug_annotated, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
-    # ── Crop from original (preserving quality for OCR) ────────────
-    crop_x1 = max(0, x_min - padding)
-    crop_y1 = max(0, y_min - padding)
-    crop_x2 = min(w, x_max + padding)
-    crop_y2 = min(h, y_max + padding)
+    # Dynamic padding: percentage of crop height (resolution-independent)
+    pad = int(crop_h * padding_ratio)
+
+    crop_x1 = max(0, x_min - pad)
+    crop_y1 = max(0, y_min - pad)
+    crop_x2 = min(w, x_max + pad)
+    crop_y2 = min(h, y_max + pad)
 
     cropped = image[crop_y1:crop_y2, crop_x1:crop_x2]
 

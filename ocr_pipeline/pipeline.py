@@ -152,10 +152,34 @@ def run_pipeline(image_path: str, debug_mode: bool = False) -> OCRResult:
         processing_canvas = binary
 
     # ================================================================
-    # STAGE 5: Morphological Operations
+    # STAGE 5: Safe-Limit Directional Closing + Bridge Snapper
     # ================================================================
-    processing_canvas = preprocessing.close_gaps(processing_canvas, kernel_size=9)
-    _debug_show("Step 5: Morphological Operations", processing_canvas, debug_mode)
+    crop_height = processing_canvas.shape[0]
+
+    # Pass 1: Vertical Snap (12% reach — fixes 'd', 'b', '8')
+    v_len = max(3, int(crop_height * 0.12))
+    v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, v_len))
+    processing_canvas = cv2.morphologyEx(processing_canvas, cv2.MORPH_CLOSE, v_kernel)
+    logger.debug(f"Stage 5a — Vertical snap: 1x{v_len} (crop height: {crop_height}px)")
+
+    # Pass 2: Horizontal Snap (4% reach — reduced from 6% for tighter safety)
+    h_len = max(3, int(crop_height * 0.04))
+    h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (h_len, 1))
+    processing_canvas = cv2.morphologyEx(processing_canvas, cv2.MORPH_CLOSE, h_kernel)
+    logger.debug(f"Stage 5b — Horizontal snap: {h_len}x1")
+
+    # Pass 3: Corner Polish (2x2 closing — no bolding)
+    polish_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    processing_canvas = cv2.morphologyEx(processing_canvas, cv2.MORPH_CLOSE, polish_kernel)
+    logger.debug("Stage 5c — Corner polish: 2x2 closing")
+
+    # Pass 4: Bridge Snapper — horizontal erosion to break hairline inter-digit bridges
+    # Solid 'U' bottom survives; weak 1px bridges between 'U' and 'd' get snapped
+    snapper_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+    processing_canvas = cv2.erode(processing_canvas, snapper_kernel, iterations=1)
+    logger.debug("Stage 5d — Bridge snapper: 2x1 horizontal erosion")
+
+    _debug_show("Step 5: Directional Closing + Bridge Snapper", processing_canvas, debug_mode)
 
     # --- Final Prep for OCR ---
     final_processed = preprocessing.invert_image(processing_canvas)
