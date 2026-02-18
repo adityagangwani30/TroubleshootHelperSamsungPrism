@@ -39,18 +39,26 @@ This system employs a hybrid approach, combining **Traditional Computer Vision (
 ```text
 .
 ├── config/                 # Global configuration settings
-│   └── assets/             # Fonts, icons, and model storage
+│   ├── assets/             # Fonts, icons, and model storage
+│   └── settings.py         # Configuration variables
 ├── data/
-│   ├── real/               # Real world test images
-│   └── washing_machine/    # Error code database (JSON)
+│   ├── microwave/          # Microwave error codes
+│   ├── refrigerators/      # Refrigerator error codes
+│   └── washing_machine/    # Washing machine error codes & images
+├── docs/                   # Documentation assets
 ├── ocr_pipeline/           # Core Logic Modules
-│   ├── preprocessing.py    # Auto-crop, HSV masking, Morphology
 │   ├── ocr_engine.py       # EasyOCR wrapper & config
+│   ├── pipeline.py         # Main orchestration & Debug UI
 │   ├── postprocess.py      # Validation & Fuzzy matching
-│   └── pipeline.py         # Main orchestration & Debug UI
+│   ├── preprocessing.py    # Auto-crop, HSV masking, Morphology
+│   └── schemas.py          # Pydantic data models
 ├── scripts/                # Executable Scripts
+│   ├── generate_synthetic.py # Synthetic data generation script
 │   └── run_ocr.py          # Primary entry point
+├── synthetic_generator/    # Synthetic data generator module
+│   └── generator.py        # Generator logic
 ├── utils/                  # Helper utilities (I/O)
+│   └── io_utils.py         # Input/Output utilities
 ├── .env                    # Environment variables (API Keys)
 ├── requirements.txt        # Python dependencies
 └── README.md               # Project Documentation
