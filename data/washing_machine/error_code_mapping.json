@@ -1,0 +1,129 @@
+{
+  "nd": {
+    "name": "No Drain",
+    "description": "Water level fails to drop below Reset Level within 15 mins.",
+    "troubleshooting": "Check drain hose for blockage/kinks, clean drain filter, verify drain pump operation."
+  },
+  "LO": {
+    "name": "Door Unlock Failure",
+    "description": "Door fails to unlock after 3 attempts.",
+    "troubleshooting": "Power reset, check door latch/lock mechanism, inspect wiring to door lock."
+  },
+  "nF": {
+    "name": "No Fill",
+    "description": "Water fill continues for >16 mins or no change in water level for 3 mins.",
+    "troubleshooting": "Check water supply valves, inlet hoses, inlet filters, and water pressure."
+  },
+  "FL": {
+    "name": "Door Lock Failure",
+    "description": "Door fails to lock after 3 attempts.",
+    "troubleshooting": "Ensure door is fully closed, inspect door lock assembly and wiring."
+  },
+  "nF1": {
+    "name": "Water Connection Error",
+    "description": "Hot/Cold water connection is not correct.",
+    "troubleshooting": "Verify hot/cold hoses are connected correctly and valves are open."
+  },
+  "LeE": {
+    "name": "Water Level Sensor Trouble",
+    "description": "Input signal from water level sensor is out of range.",
+    "troubleshooting": "Inspect pressure hose for leaks/blockage, check water level sensor connections."
+  },
+  "LE": {
+    "name": "Water Level Sensor Trouble",
+    "description": "Input signal from water level sensor is out of range.",
+    "troubleshooting": "Inspect pressure hose for leaks/blockage, check water level sensor connections."
+  },
+  "OF": {
+    "name": "Overflow",
+    "description": "Water level is at or above overflow level.",
+    "troubleshooting": "Turn off water supply, check inlet valve stuck open, inspect water level sensor."
+  },
+  "dc": {
+    "name": "Unbalanced Load",
+    "description": "Unbalance or cabinet bump detected during final spin.",
+    "troubleshooting": "Redistribute laundry evenly, reduce load size, retry spin cycle."
+  },
+  "E2": [
+    {
+      "name": "EEPROM Fault",
+      "description": "Program settings are being reset.",
+      "troubleshooting": "Power reset, reprogram PCB if applicable, replace control board if persists."
+    },
+    {
+      "name": "Jammed/Stuck Key",
+      "description": "Key input signals detected for more than 30 seconds.",
+      "troubleshooting": "Clean control panel, check for stuck buttons, replace keypad if needed."
+    }
+  ],
+  "dL": {
+    "name": "Door Open (Running)",
+    "description": "Door is detected as open when the motor is operating.",
+    "troubleshooting": "Stop cycle, close door firmly, inspect door switch and wiring."
+  },
+  "dS": {
+    "name": "Door Open (Locking)",
+    "description": "Door is detected as open while trying to lock the door.",
+    "troubleshooting": "Check door alignment, inspect lock actuator and harness."
+  },
+  "bE": {
+    "name": "Motor Sensor Error",
+    "description": "Motor hall sensor signals sent without motor operation.",
+    "troubleshooting": "Check motor hall sensor wiring, inspect motor PCB connections."
+  },
+  "86": {
+    "name": "Temp/Resistance Error",
+    "description": "Abnormal high/low temperature or resistance (Thermal sensor or PBA).",
+    "troubleshooting": "Check thermistor resistance, inspect heater and PCB connections."
+  },
+  "E3": {
+    "name": "Motor Drive Error",
+    "description": "MICOM driving motor but no response from hall sensor (Locked/Defective/Overload).",
+    "troubleshooting": "Check motor for overload, inspect hall sensor, test motor windings."
+  },
+  "Sr": {
+    "name": "System Relay Failure",
+    "description": "Main Relay Failure (PCB does not notice relay operation).",
+    "troubleshooting": "Inspect main relay on PCB, check solder joints, replace PCB if faulty."
+  },
+  "Hr": {
+    "name": "Heater Relay Failure",
+    "description": "No Heater Relay Check Signal.",
+    "troubleshooting": "Check heater relay operation, wiring, and PCB output signals. "
+  },
+  "3E": {
+    "name": "Over-current Detected",
+    "description": "Motor won't turn; IPM detects over-current.",
+    "troubleshooting": "Inspect motor for mechanical jam, check IPM and motor wiring."
+  },
+  "2E": {
+    "name": "Voltage Error",
+    "description": "Voltage for motor control bus is over or under specified limit.",
+    "troubleshooting": "Verify stable power supply, check internal power board and wiring."
+  },
+  "8E": {
+    "name": "MEMS Sensor Failure",
+    "description": "No MEMS Sensor Check Signal.",
+    "troubleshooting": "Power reset, inspect MEMS sensor and PCB connections."
+  },
+  "7E": {
+    "name": "Silver Care Kit Failure",
+    "description": "Silver Care Kit (PCB) Failure.",
+    "troubleshooting": "Check Silver Care PCB connections, replace module if required."
+  },
+  "PF": {
+    "name": "Power Failure",
+    "description": "Power failure during washing (Informational).",
+    "troubleshooting": "Inform user, resume cycle if possible, ensure stable power supply."
+  },
+  "SUdS": {
+    "name": "Suds Detected",
+    "description": "Suds detected during wash (Informational).",
+    "troubleshooting": "Reduce detergent amount, use HE detergent, run rinse cycle."
+  },
+  "Sd": {
+    "name": "Suds Detected",
+    "description": "Suds detected during wash (Informational).",
+    "troubleshooting": "Reduce detergent amount, use HE detergent, run rinse cycle."
+  }
+}

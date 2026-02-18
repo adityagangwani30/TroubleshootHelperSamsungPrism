@@ -1,0 +1,229 @@
+{
+  "E-11": {
+    "name": "Gas Sensor Open Error",
+    "description": "Gas sensor open circuit detected.",
+    "troubleshooting": "Inspect gas sensor wiring and connector. Replace gas sensor if open circuit is confirmed."
+  },
+
+  "E-12": {
+    "name": "Gas Sensor Short Error",
+    "description": "Gas sensor short circuit detected.",
+    "troubleshooting": "Check gas sensor wiring for short circuit. Replace sensor if necessary."
+  },
+
+  "E-13": {
+    "name": "Gas Sensor Time Error",
+    "description": "Gas sensor did not respond within the maximum allowed time.",
+    "troubleshooting": "Inspect gas sensor operation and wiring. Replace sensor if response is abnormal."
+  },
+
+  "E-14": {
+    "name": "Gas Sensor Dry Up / No Load Error",
+    "description": "Gas sensor detected dry operation or no load condition.",
+    "troubleshooting": "Ensure food is placed properly inside cavity. Inspect gas sensor if issue persists."
+  },
+
+  "E-21": {
+    "name": "Temperature Sensor Open Error",
+    "description": "Temperature sensor open circuit detected.",
+    "troubleshooting": "Check temperature sensor wiring and resistance. Replace sensor if open."
+  },
+
+  "E-22": {
+    "name": "Temperature Sensor Short Error",
+    "description": "Temperature sensor short circuit detected.",
+    "troubleshooting": "Inspect sensor wiring for shorts. Replace sensor if required."
+  },
+
+  "E-23": {
+    "name": "Preheating Timeout Error",
+    "description": "Preheating was not completed within the specified time due to temperature sensor error.",
+    "troubleshooting": "Check temperature sensor operation and heater performance."
+  },
+
+  "E-24": {
+    "name": "Over Temperature Error",
+    "description": "Abnormally high temperature detected.",
+    "troubleshooting": "Inspect temperature sensor, cooling fan, and heater control circuitry."
+  },
+
+  "E-25": {
+    "name": "Micro Cook Temperature Error",
+    "description": "Abnormal temperature detected during microwave cooking.",
+    "troubleshooting": "Inspect temperature sensor and magnetron operation."
+  },
+
+  "E-26": {
+    "name": "Temperature Rise Error",
+    "description": "Temperature did not rise above the fixed AD value within 3 minutes after heater started.",
+    "troubleshooting": "Check heater, temperature sensor, and power supply to heating circuit."
+  },
+
+  "E-31": {
+    "name": "Gas Sensor Open Error",
+    "description": "Gas sensor open condition detected when HEX value exceeds FF for 5 seconds.",
+    "troubleshooting": "Inspect gas sensor wiring and replace sensor if faulty."
+  },
+
+  "E-32": {
+    "name": "Gas Sensor Short Error",
+    "description": "Gas sensor short circuit detected.",
+    "troubleshooting": "Check gas sensor wiring and replace sensor if shorted."
+  },
+
+  "E-33": {
+    "name": "Weight Sensor Error",
+    "description": "Weight sensor initial HEX value is below 14 for 30 seconds during operation.",
+    "troubleshooting": "Inspect weight sensor installation and wiring. Replace sensor if needed."
+  },
+
+  "E-34": {
+    "name": "Weight Sensor Calculation Error",
+    "description": "Calculated K value from weight sensor is out of ±28 HEX range.",
+    "troubleshooting": "Check weight sensor calibration and replace sensor if abnormal."
+  },
+
+  "E-35": {
+    "name": "Weight Sensor Calculation Error",
+    "description": "Calculated A value is negative during weight sensing operation.",
+    "troubleshooting": "Inspect weight sensor and control PCB calculation logic."
+  },
+
+  "E-36": {
+    "name": "Door Open Error",
+    "description": "Door opened during sensor cooking operation.",
+    "troubleshooting": "Close door firmly and restart cooking. Inspect door switch if error repeats."
+  },
+
+  "E-41": {
+    "name": "Easy/PH Sensor Open Error",
+    "description": "Easy/PH sensor open circuit detected.",
+    "troubleshooting": "Inspect Easy/PH sensor wiring and replace sensor if open."
+  },
+
+  "E-42": {
+    "name": "Easy/PH Sensor Short Error",
+    "description": "Easy/PH sensor short circuit detected.",
+    "troubleshooting": "Check sensor wiring for short circuit and replace sensor if necessary."
+  },
+
+  "E-43": {
+    "name": "Easy/PH Sensor Time Error",
+    "description": "Easy/PH sensor did not respond within the maximum allowed time.",
+    "troubleshooting": "Inspect Easy/PH sensor operation and replace if faulty."
+  },
+
+  "E-44": {
+    "name": "Easy/PH Sensor Dry Up Error",
+    "description": "Dry-up condition detected by Easy/PH sensor.",
+    "troubleshooting": "Ensure food load is correct and inspect sensor operation."
+  },
+
+  "E-45": {
+    "name": "Cooling Error",
+    "description": "Cooling system failed to operate properly within 3 minutes.",
+    "troubleshooting": "Inspect cooling fan motor, airflow path, and control PCB."
+  },
+
+  "E-46": {
+    "name": "Primary Open Error",
+    "description": "Primary sensor open detected during Easy/PH operation.",
+    "troubleshooting": "Inspect sensor wiring and replace faulty components."
+  },
+
+  "E-47": {
+    "name": "Door Open Error",
+    "description": "Door opened during cooking operation.",
+    "troubleshooting": "Close door securely and inspect door switch mechanism."
+  },
+
+  "E-51": {
+    "name": "EEPROM Sense Failure",
+    "description": "EEPROM open or sense failure detected.",
+    "troubleshooting": "Power reset unit. Replace control PCB if error persists."
+  },
+
+  "E-53": {
+    "name": "EEPROM Read/Write Error",
+    "description": "EEPROM read or write operation failed.",
+    "troubleshooting": "Power reset unit. Replace control PCB if necessary."
+  },
+
+  "E-54": {
+    "name": "EEPROM Zero Setting Error",
+    "description": "EEPROM zero value could not be set correctly.",
+    "troubleshooting": "Inspect EEPROM memory and replace control PCB if required."
+  },
+
+  "E-61": {
+    "name": "Humidity Sensor Open Error",
+    "description": "Humidity sensor open circuit detected.",
+    "troubleshooting": "Inspect humidity sensor wiring and replace sensor if open."
+  },
+
+  "E-62": {
+    "name": "Humidity Sensor Short Error",
+    "description": "Humidity sensor short circuit detected.",
+    "troubleshooting": "Check sensor wiring for short circuit and replace if necessary."
+  },
+
+  "E-63": {
+    "name": "Humidity Sensor Time Error",
+    "description": "Humidity sensor did not respond within the maximum allowed time.",
+    "troubleshooting": "Inspect humidity sensor and replace if response is abnormal."
+  },
+
+  "-SE-": {
+    "name": "Key Short Error",
+    "description": "Key input short detected for more than 10 seconds.",
+    "troubleshooting": "Clean control panel and inspect keypad for stuck or shorted keys."
+  },
+
+  "E-01": {
+    "name": "Door Open Error",
+    "description": "Door opened when it should not be opened.",
+    "troubleshooting": "Inspect door latch and door switch assembly."
+  },
+
+  "E-02": {
+    "name": "Cooking Time Setting Over (MWO)",
+    "description": "Maximum cooking time exceeded in Microwave Oven mode.",
+    "troubleshooting": "Reduce cooking time and restart operation."
+  },
+
+  "E-03": {
+    "name": "Cooking Time Setting Over (Grill)",
+    "description": "Maximum cooking time exceeded in Grill mode.",
+    "troubleshooting": "Reduce cooking time and restart operation."
+  },
+
+  "E-04": {
+    "name": "Cooking Time Setting Over (Convection)",
+    "description": "Maximum cooking time exceeded in Convection mode.",
+    "troubleshooting": "Reduce cooking time and restart operation."
+  },
+
+  "E-05": {
+    "name": "Cooking Time Setting Over (Combination)",
+    "description": "Maximum cooking time exceeded in Combination mode.",
+    "troubleshooting": "Reduce cooking time and restart operation."
+  },
+
+  "E-06": {
+    "name": "Swing Heater Error",
+    "description": "Swing heater stop was not detected for 20 seconds during cooking.",
+    "troubleshooting": "Inspect swing heater motor and position sensor."
+  },
+
+  "E-08": {
+    "name": "Spit Insert Error",
+    "description": "Microwave cooking started with spit inserted in cavity.",
+    "troubleshooting": "Remove spit accessory and restart microwave function."
+  },
+
+  "E-09": {
+    "name": "Damper Error",
+    "description": "Damper position was not set correctly within 2 minutes.",
+    "troubleshooting": "Inspect damper motor, linkage, and control circuitry."
+  }
+}

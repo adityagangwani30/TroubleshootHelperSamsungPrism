@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+data/microwave/Microwave
+data/refrigerators/Refrigerators
+data/washing_machine/Washing Machines
+data/synthetic
+config/assets/models/

@@ -1,0 +1,217 @@
+{
+  "AP": {
+    "name": "Access Point Mode",
+    "description": "Wi-Fi setup mode used for SmartThings configuration.",
+    "troubleshooting": "Not a fault. Complete SmartThings setup or power-cycle the refrigerator to exit AP mode."
+  },
+
+  "21E": {
+    "name": "Freezer Fan Error",
+    "description": "Freezer fan not operating properly due to icing or blockage.",
+    "troubleshooting": "Check for ice buildup around the fan, clear obstructions, inspect fan motor and wiring."
+  },
+
+  "22E": {
+    "name": "Refrigerator Fan Error",
+    "description": "Refrigerator fan issue caused by obstruction or door left open.",
+    "troubleshooting": "Ensure door is fully closed, remove ice buildup, inspect fan motor and wiring."
+  },
+
+  "22C": {
+    "name": "Refrigerator Fan Error",
+    "description": "Refrigerator fan issue caused by obstruction or door left open.",
+    "troubleshooting": "Ensure door is fully closed, remove ice buildup, inspect fan motor and wiring."
+  },
+
+  "41": {
+    "name": "Family Hub Software Error",
+    "description": "Family Hub display software or system malfunction.",
+    "troubleshooting": "Power reset refrigerator. Update Family Hub software if available."
+  },
+
+  "42": {
+    "name": "Family Hub Software Error",
+    "description": "Family Hub display software or system malfunction.",
+    "troubleshooting": "Power reset refrigerator. Update Family Hub software if available."
+  },
+
+  "41C": {
+    "name": "Family Hub Update Error",
+    "description": "Software update failure on the Family Hub display.",
+    "troubleshooting": "Restart refrigerator and retry update. Verify network connection."
+  },
+
+  "76C": {
+    "name": "Autofill Water Error",
+    "description": "Moisture or water detected in the autofill compartment.",
+    "troubleshooting": "Dry autofill compartment, check water supply lines and sensors."
+  },
+
+  "85C": {
+    "name": "Low Voltage Warning",
+    "description": "Temporary voltage drop or power instability detected.",
+    "troubleshooting": "Ensure refrigerator is connected to a stable, dedicated power outlet."
+  },
+
+  "88": {
+    "name": "Power or Voltage Error",
+    "description": "Power surge or communication issue due to unstable voltage.",
+    "troubleshooting": "Disconnect power for 5 minutes, then reconnect to a stable power source."
+  },
+
+  "83E": {
+    "name": "Power or Voltage Error",
+    "description": "Power surge or communication issue due to unstable voltage.",
+    "troubleshooting": "Disconnect power for 5 minutes, then reconnect to a stable power source."
+  },
+
+  "85E": {
+    "name": "Power or Voltage Error",
+    "description": "Power surge or communication issue due to unstable voltage.",
+    "troubleshooting": "Disconnect power for 5 minutes, then reconnect to a stable power source."
+  },
+
+  "86E": {
+    "name": "Power or Voltage Error",
+    "description": "Power surge or communication issue due to unstable voltage.",
+    "troubleshooting": "Disconnect power for 5 minutes, then reconnect to a stable power source."
+  },
+
+  "PC ER": {
+    "name": "Communication Error",
+    "description": "Communication failure between internal refrigerator components.",
+    "troubleshooting": "Inspect wiring harnesses between PCBs and power reset the unit."
+  },
+
+  "PC CH": {
+    "name": "Communication Error",
+    "description": "Communication failure between internal refrigerator components.",
+    "troubleshooting": "Inspect wiring harnesses between PCBs and power reset the unit."
+  },
+
+  "OF OF": {
+    "name": "Cooling Off (Demo Mode)",
+    "description": "Refrigerator is in showroom mode with cooling disabled.",
+    "troubleshooting": "Deactivate Demo Mode using control panel key combination."
+  },
+
+  "O FF": {
+    "name": "Cooling Off (Demo Mode)",
+    "description": "Refrigerator is in showroom mode with cooling disabled.",
+    "troubleshooting": "Deactivate Demo Mode using control panel key combination."
+  },
+
+  "OFF OFF": {
+    "name": "Cooling Off (Demo Mode)",
+    "description": "Refrigerator is in showroom mode with cooling disabled.",
+    "troubleshooting": "Deactivate Demo Mode using control panel key combination."
+  },
+
+  "ALL_ICONS": {
+    "name": "Self Diagnostic Mode",
+    "description": "Normal startup self-test after power is restored.",
+    "troubleshooting": "No action required. Power-cycle unit if display does not return to normal."
+  },
+
+  "ICE_OFF": {
+    "name": "Ice Maker/Bucket Error",
+    "description": "Ice bucket missing or not properly seated.",
+    "troubleshooting": "Reinstall ice bucket correctly and ensure ice maker is fully seated."
+  },
+
+  "1E": {
+    "name": "Power Interruption Error",
+    "description": "Indicates a power outage or voltage interruption was detected.",
+    "troubleshooting": "Informational only. Verify stable power supply."
+  },
+
+  "2E": {
+    "name": "Fridge Sensor Error",
+    "description": "Refrigerator temperature sensor is faulty or disconnected.",
+    "troubleshooting": "Inspect temperature sensor and wiring. Replace sensor if defective."
+  },
+
+  "4E": {
+    "name": "Freezer Defrost Sensor Error",
+    "description": "Freezer defrost sensor failure affecting defrost cycle.",
+    "troubleshooting": "Check defrost sensor resistance and wiring connections."
+  },
+
+  "5E": {
+    "name": "Fridge Defrost Sensor Error",
+    "description": "Refrigerator defrost sensor malfunction.",
+    "troubleshooting": "Inspect defrost sensor wiring and resistance. Replace if faulty."
+  },
+
+  "SE": {
+    "name": "Fridge Defrost Sensor Error",
+    "description": "Refrigerator defrost sensor malfunction.",
+    "troubleshooting": "Inspect defrost sensor wiring and resistance. Replace if faulty."
+  },
+
+  "6E": {
+    "name": "Ambient Sensor Error",
+    "description": "Ambient air temperature sensor is not functioning correctly.",
+    "troubleshooting": "Check ambient sensor placement, wiring, and resistance."
+  },
+
+  "8E": {
+    "name": "Ice Maker Sensor Error",
+    "description": "Ice maker sensor failure or wiring issue.",
+    "troubleshooting": "Inspect ice maker sensor and wiring harness."
+  },
+
+  "14E": {
+    "name": "Ice Maker System Error",
+    "description": "Ice maker system sensor is reporting an abnormal condition.",
+    "troubleshooting": "Power reset unit and inspect ice maker assembly and sensors."
+  },
+
+  "26E": {
+    "name": "Water Valve Error",
+    "description": "Water inlet valve or ice maker water supply issue.",
+    "troubleshooting": "Check water supply line, inlet valve operation, and wiring."
+  },
+
+  "33E": {
+    "name": "Ice Pipe Heater Error",
+    "description": "Ice pipe heater is not heating properly, risk of freezing.",
+    "troubleshooting": "Inspect heater resistance and wiring. Replace heater if needed."
+  },
+
+  "39E": {
+    "name": "Ice Maker Function Error",
+    "description": "Ice maker operation or motor problem detected.",
+    "troubleshooting": "Inspect ice maker motor, gears, and wiring."
+  },
+
+  "39C": {
+    "name": "Ice Maker Function Error",
+    "description": "Ice maker operation or motor problem detected.",
+    "troubleshooting": "Inspect ice maker motor, gears, and wiring."
+  },
+
+  "40E": {
+    "name": "Ice Room Fan Error",
+    "description": "Ice room fan not operating correctly.",
+    "troubleshooting": "Check for ice blockage, inspect fan motor and wiring."
+  },
+
+  "40C": {
+    "name": "Ice Room Fan Error",
+    "description": "Ice room fan not operating correctly.",
+    "troubleshooting": "Check for ice blockage, inspect fan motor and wiring."
+  },
+
+  "84E": {
+    "name": "Compressor Lock Error",
+    "description": "Compressor motor is locked or unable to start.",
+    "troubleshooting": "Disconnect power, check compressor wiring, inverter PCB, and replace compressor if required."
+  },
+
+  "84C": {
+    "name": "Compressor Lock Error",
+    "description": "Compressor motor is locked or unable to start.",
+    "troubleshooting": "Disconnect power, check compressor wiring, inverter PCB, and replace compressor if required."
+  }
+}
