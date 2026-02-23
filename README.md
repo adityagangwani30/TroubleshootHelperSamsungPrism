@@ -84,7 +84,7 @@ The evaluator performs strict, label-driven validation against:
 ## Installation
 ### Step 1: Clone
 ```bash
-git clone https://github.ecodesamsung.com/SRIB-PRISM/25ST32MS_Troubleshoot_Helper_Revolutionizing_Device_Diagnostics.git
+git clone https://github.com/adityagangwani30/TroubleshootHelperSamsungPrism.git
 cd 25ST32MS_Troubleshoot_Helper_Revolutionizing_Device_Diagnostics
 ```
 
