@@ -1,146 +1,139 @@
-# 7-Segment Appliance OCR Pipeline
+﻿# Samsung PRISM Appliance Error Code OCR Pipeline
 
-![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green.svg)
-![EasyOCR](https://img.shields.io/badge/EasyOCR-Deep%20Learning-orange.svg)
+![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
+![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green)
+![YOLO](https://img.shields.io/badge/YOLO-ROI%20Detection-red)
+![EasyOCR](https://img.shields.io/badge/EasyOCR-Text%20Engine-orange)
 
+## Overview
+This repository contains a Samsung PRISM-focused Appliance Error Code OCR system designed for difficult real-world conditions, including dim LEDs, heavy glare, and skewed camera angles.
 
-> **A robust, production-grade Computer Vision pipeline designed to read error codes (e.g., "5Ud", "dC", "UE") from appliance LED displays.**
+The project is organized around production-style OCR modules (`src/`), strict evaluation tooling (`eval/`), and dataset/versioning controls for ML workflows.
 
-This system employs a hybrid approach, combining **Traditional Computer Vision (OpenCV)** for precise localization and filtering and **Deep Learning (EasyOCR)** for robust text extraction.
+## Architecture
+### Two-Stage Detection + Recognition
+The pipeline has transitioned to a robust two-stage architecture:
 
----
+1. **YOLO Detector (Stage 1)**
+   Detects and crops the display ROI from noisy appliance panel images.
+2. **Custom CRNN Recognizer (Stage 2)**
+   Performs sequence recognition on the cropped ROI to predict the full error code.
+3. **Code Validation Layer**
+   Validates recognized output against the source-of-truth mapping in `data/washing_machine/error_code_mapping.json`.
 
-## ✨ Key Features
+### Intelligent Vision Preprocessing
+To rescue dim or distorted LED text before recognition, the preprocessing stack applies:
 
-### � Intelligent Auto-Crop
-- **Dynamic Isolation:** Uses HSV color masking and density clustering to distinguish glowing LED segments from the control panel background.
-- **Resolution Independent:** Adapts to any image size using relative height filtering (rejecting noise < 50% of max digit height) and horizontal grouping loops.
+- **HSV Color-Space Masking** for LED-region isolation.
+- **CLAHE (Contrast Limited Adaptive Histogram Equalization)** for local contrast recovery.
+- **Top-Hat Morphological Transforms** to emphasize bright segments on uneven backgrounds.
+- **Bridge Snapper** to break thin accidental merges between adjacent characters.
 
-### 🧠 Adaptive Morphological Processing
-- **Safe-Limit Directional Closing:** specialized algorithms bridge the gaps in 7-segment displays without merging adjacent digits.
-- **Bridge Snapper:** A "micro-weld" post-processing step that intentionally erodes hairline connections between characters (e.g., "U" touching "d").
+### Strict Evaluation
+Automated benchmarking is provided via:
 
-### 🤖 Recognition Engine
-- **Primary Engine:** Local, fast neural network inference using **EasyOCR**.
-- **Performance:** Optimized for 7-segment display fonts and low-contrast conditions.
+- `eval/batch_evaluate.py`
 
-### ✅ Database-Driven Validation
-- **Smart Validation:** Extracted tax is validated against a structured JSON dataset (`error_code_mapping.json`).
-- **Fuzzy Matching:** Implements length-constrained fuzzy logic to correct common OCR errors (e.g., reading "5" as "S" or "O" as "0") while rejecting false positives.
+The evaluator performs strict, label-driven validation against:
 
-### 📺 Real-Time Debug Mode
-- **Visual Pipeline:** See exactly what the computer sees. Terminal windows visualize every stage: *Original -> Crop -> Threshold -> Morph -> Final*.
+- `data/washing_machine/error_code_mapping.json`
 
----
-
-## 📂 Directory Structure
-
+## Directory Structure (Validated)
 ```text
 .
-├── config/                 # Global configuration settings
-│   ├── assets/             # Fonts, icons, and model storage
-│   └── settings.py         # Configuration variables
-├── data/
-│   ├── microwave/          # Microwave error codes
-│   ├── refrigerators/      # Refrigerator error codes
-│   └── washing_machine/    # Washing machine error codes & images
-├── docs/                   # Documentation assets
-├── ocr_pipeline/           # Core Logic Modules
-│   ├── ocr_engine.py       # EasyOCR wrapper & config
-│   ├── pipeline.py         # Main orchestration & Debug UI
-│   ├── postprocess.py      # Validation & Fuzzy matching
-│   ├── preprocessing.py    # Auto-crop, HSV masking, Morphology
-│   └── schemas.py          # Pydantic data models
-├── scripts/                # Executable Scripts
-│   ├── generate_synthetic.py # Synthetic data generation script
-│   └── run_ocr.py          # Primary entry point
-├── synthetic_generator/    # Synthetic data generator module
-│   └── generator.py        # Generator logic
-├── utils/                  # Helper utilities (I/O)
-│   └── io_utils.py         # Input/Output utilities
-├── .env                    # Environment variables (API Keys)
-├── requirements.txt        # Python dependencies
-└── README.md               # Project Documentation
+|-- config/
+|   |-- assets/
+|   |   `-- models/
+|   `-- settings.py
+|-- data/                          # Core datasets
+|   |-- raw/
+|   |   `-- .gitkeep
+|   |-- processed/
+|   |   `-- .gitkeep
+|   |-- washing_machine/
+|   |   |-- Washing Machines/
+|   |   |-- error_code_mapping.json
+|   |   `-- error_codes.json
+|   |-- microwave/
+|   `-- refrigerators/
+|-- src/                           # Core OCR pipeline modules
+|   |-- __init__.py
+|   |-- pipeline.py
+|   |-- preprocessing.py
+|   `-- postprocess.py
+|-- eval/                          # Evaluation and benchmarking
+|   |-- __init__.py
+|   `-- batch_evaluate.py
+|-- ocr_pipeline/
+|   |-- __init__.py
+|   |-- ocr_engine.py
+|   `-- schemas.py
+|-- scripts/
+|   |-- run_ocr.py
+|   `-- run_eval_capture.py
+|-- synthetic_generator/
+|-- TroubleShootHelperDataset/
+|-- utils/
+|-- requirements.txt
+|-- .gitignore
+`-- README.md
 ```
 
----
+> Note: Per current repository policy, there is **no `configs/` folder**. Error-code JSON remains under `data/washing_machine/`.
 
-## 🚀 Installation & Setup
-
-### 1. Clone the Repository
+## Installation
+### Step 1: Clone
 ```bash
-git clone https://github.com/your-org/appliance-ocr.git
-cd appliance-ocr
+git clone https://github.ecodesamsung.com/SRIB-PRISM/25ST32MS_Troubleshoot_Helper_Revolutionizing_Device_Diagnostics.git
+cd 25ST32MS_Troubleshoot_Helper_Revolutionizing_Device_Diagnostics
 ```
 
-### 2. Install Dependencies
-Ensure you have Python 3.9+ installed, then run:
+### Step 2: Create Virtual Environment
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell:
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+### Step 3: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
+### Step 4: Environment Configuration
+Create a local `.env` file (never commit this file):
 
+```dotenv
+# .env
+LOG_LEVEL=INFO
+EASYOCR_MODEL_DIR=config/assets/models
+```
 
----
-
-## 💻 Usage Guide
-
-Run the OCR pipeline on any image using the `run_ocr.py` script:
-
+## Usage Guide
+### Run OCR on One Image
 ```bash
-python scripts/run_ocr.py --image data/washing_machine/Washing_Machines/dC.jpg --debug
+python scripts/run_ocr.py --image "data/washing_machine/Washing Machines/dC.jpg" --debug
 ```
 
-### Command Flags
-- `--image`: Path to the input image file.
-- `--debug`: Enable visual debug windows (Press any key to step through).
-
-### Terminal Output
-The system provides a detailed engineering report for every run:
-
-```text
-============================================================
-       OCR PIPELINE — ENGINEERING REPORT
-============================================================
-  Image       : data/washing_machine/dC.jpg
-------------------------------------------------------------
-  📋 RESULTS
-     Raw Text     : dC
-     Clean Text   : dC
-     Valid Code   : Yes
-     Match Type   : ✅ DIRECT_MATCH
-     Confidence   : 62.10%
-------------------------------------------------------------
-  🔧 ERROR DETAILS
-     Name            : Unbalanced Load
-     Description     : Unbalance or cabinet bump detected during final spin.
-     Troubleshooting : Redistribute laundry evenly, reduce load size, retry spin cycle.
-------------------------------------------------------------
+### Run Strict Batch Evaluation
+```bash
+python eval/batch_evaluate.py --input "data/washing_machine/Washing Machines"
 ```
 
----
+### Capture Evaluation Report
+```bash
+python scripts/run_eval_capture.py
+```
 
-## ⚙️ Technical Pipeline Breakdown
+## Evaluation Protocol
+- Ground truth is parsed from file names.
+- Predictions are normalized and matched with deterministic + fuzzy logic.
+- Final pass/fail is measured against `data/washing_machine/error_code_mapping.json`.
 
-1.  **Image Input**: Loads image and applies a regex filter to valid validation scope.
-2.  **Preprocessing (Auto-Crop)**:
-    *   **HSV Masking**: Isolates LED colors.
-    *   **Cluster localization**: Identifies dominant character groups based on density and aspect ratio.
-    *   **Cropping**: Zooms in on the display area with 20% padding.
-3.  **Morphological Welding**:
-    *   **Vertical Snap**: Connects top/bottom segments of characters.
-    *   **Horizontal Snap**: Connects side segments (corners) but stops short of merging digits.
-    *   **Bridge Snapper**: Erodes weak inter-digit connections.
-4.  **OCR Inference**: Feeds the "welded" binary image into EasyOCR for text extraction.
-5.  **Post-Processing**:
-    *   **Validation**: Checks if text matches known codes in `error_code_mapping.json`.
-    *   **Fuzzy Logic**: Attempts to correct minor misreadings if direct match fails.
-
----
-
-## 🔮 Future Improvements
-
-- **Real-Time Video Support**: Optimize pipeline for >30 FPS inference on edge devices.
-- **Edge Deployment**: Quantize models for Raspberry Pi / Android deployment.
-- **Multi-Appliance Support**: Expand database to include Refrigerators and Ovens.
+## Roadmap
+- Replace/extend OCR backends with optimized CRNN checkpoints.
+- Add domain adaptation for new appliance families.
+- Improve deployment packaging for edge-device inference.

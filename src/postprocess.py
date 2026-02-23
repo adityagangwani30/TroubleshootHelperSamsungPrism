@@ -116,6 +116,11 @@ def correct_common_misreads(text: str) -> str:
         'O': '0',
         'I': '1',
         'l': '1',
+        'o': 'd',   # 7-seg 'd' misread as 'o'
+        'a': 'C',   # bottom-open 'a' ↔ 'C'
+        'j': '3',   # tail of 'j' ↔ '3'
+        'r': '2',   # '2' misread as 'r'
+        'i': 'E',   # 'E' misread as 'i'
     }
 
     # Check for direct mapping

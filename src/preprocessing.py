@@ -155,50 +155,101 @@ def auto_crop_display(image: np.ndarray, padding_ratio: float = 0.2):
         color_img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
     # ════════════════════════════════════════════════════════════════
-    # PHASE A: Isolate glowing LED pixels (HSV + brightness fallback)
+    # PHASE A: Tiered HSV Isolation — try strict → moderate → loose → Otsu
     # ════════════════════════════════════════════════════════════════
     hsv = cv2.cvtColor(color_img, cv2.COLOR_BGR2HSV)
-    lower_bound = np.array([0, 30, 150])
-    upper_bound = np.array([180, 255, 255])
-    hsv_mask = cv2.inRange(hsv, lower_bound, upper_bound)
+    gray_img = cv2.cvtColor(color_img, cv2.COLOR_BGR2GRAY)
 
-    # Fallback: if HSV finds almost nothing, use raw brightness
-    if cv2.countNonZero(hsv_mask) < total_area * 0.001:
-        gray = cv2.cvtColor(color_img, cv2.COLOR_BGR2GRAY)
-        _, hsv_mask = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)
+    tiers = [
+        ("strict",   np.array([0, 50, 150]), np.array([180, 255, 255])),
+        ("moderate", np.array([0, 25, 100]), np.array([180, 255, 255])),
+        ("loose",    np.array([0, 10,  60]), np.array([180, 255, 255])),
+    ]
 
-    # ════════════════════════════════════════════════════════════════
-    # STEP 1: Extract All Candidates
-    # ════════════════════════════════════════════════════════════════
-    # Light morphology to connect broken segments within a single digit
-    # but NOT across separate characters
     connect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    connected = cv2.dilate(hsv_mask, connect_kernel, iterations=1)
-    connected = cv2.morphologyEx(connected, cv2.MORPH_CLOSE, connect_kernel)
 
-    contours, _ = cv2.findContours(connected, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    def _extract_boxes(mask):
+        """From a binary mask, return (all_boxes, giant_box_or_None)."""
+        connected = cv2.dilate(mask, connect_kernel, iterations=1)
+        connected = cv2.morphologyEx(connected, cv2.MORPH_CLOSE, connect_kernel)
+        contours, _ = cv2.findContours(connected, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        boxes = []
+        giant = None
+        for cnt in contours:
+            x, y, cw, ch = cv2.boundingRect(cnt)
+            box_area = cw * ch
+            if box_area > total_area * 0.50:
+                giant = (x, y, cw, ch)
+                continue
+            if box_area < total_area * 0.0001:
+                continue
+            boxes.append((x, y, cw, ch))
+        return boxes, giant
 
+    best_mask = None
+    best_boxes = []
+    best_giant = None
+
+    for tier_name, lower, upper in tiers:
+        mask = cv2.inRange(hsv, lower, upper)
+        nz = cv2.countNonZero(mask)
+        if nz < total_area * 0.001:
+            continue  # mask is empty, skip
+        boxes, giant = _extract_boxes(mask)
+        if len(boxes) >= 2:  # Found digit-like contours
+            best_mask = mask
+            best_boxes = boxes
+            best_giant = giant
+            logger.debug(f"Auto-crop: tier '{tier_name}' produced {len(boxes)} boxes")
+            break
+        elif len(boxes) >= 1 and best_mask is None:
+            best_mask = mask
+            best_boxes = boxes
+            best_giant = giant
+        # Track giant for fallback
+        if giant is not None and best_giant is None:
+            best_giant = giant
+            best_mask = mask
+
+    # Otsu fallback — if no tier found usable boxes
+    if not best_boxes:
+        _, otsu_mask = cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        boxes, giant = _extract_boxes(otsu_mask)
+        if boxes:
+            best_boxes = boxes
+            best_giant = giant
+            best_mask = otsu_mask
+            logger.debug(f"Auto-crop: Otsu fallback produced {len(boxes)} boxes")
+        elif giant is not None:
+            best_giant = giant
+            best_mask = otsu_mask
+
+    # ════════════════════════════════════════════════════════════════
+    # STEP 1: Extract All Candidates (use best_boxes from tiered approach)
+    # ════════════════════════════════════════════════════════════════
     # Prepare debug annotation image
     debug_annotated = color_img.copy()
 
-    if not contours:
-        return image, debug_annotated
+    all_boxes = best_boxes
 
-    # Collect all bounding boxes
-    all_boxes = []
-    for cnt in contours:
-        x, y, cw, ch = cv2.boundingRect(cnt)
-        box_area = cw * ch
-        # Skip giant panels (> 50% of image)
-        if box_area > total_area * 0.50:
-            continue
-        # Skip near-zero-area specks
-        if box_area < total_area * 0.0001:
-            continue
-        all_boxes.append((x, y, cw, ch))
+    # Giant-contour fallback: if no small boxes survived but we have
+    # a giant contour, use it — it likely IS the display panel
+    if not all_boxes and best_giant is not None:
+        gx, gy, gw, gh = best_giant
+        logger.debug(f"Auto-crop: using giant contour as fallback ({gw}x{gh})")
+        pad = int(gh * padding_ratio)
+        crop_x1 = max(0, gx - pad)
+        crop_y1 = max(0, gy - pad)
+        crop_x2 = min(w, gx + gw + pad)
+        crop_y2 = min(h, gy + gh + pad)
+        cropped = image[crop_y1:crop_y2, crop_x1:crop_x2]
+        cv2.rectangle(debug_annotated, (gx, gy), (gx + gw, gy + gh), (0, 255, 0), 3)
+        return cropped, debug_annotated
 
     if not all_boxes:
+        logger.warning("Auto-crop: no contours found at any tier, returning full image.")
         return image, debug_annotated
+
 
     # ════════════════════════════════════════════════════════════════
     # STEP 2: Filter by Relative Height — "Big vs Small" Rule

@@ -13,9 +13,9 @@ from pathlib import Path
 from config import settings
 from utils import io_utils
 from . import preprocessing
-from . import ocr_engine
 from . import postprocess
-from .schemas import OCRResult, ErrorTroubleshooting
+from ocr_pipeline import ocr_engine
+from ocr_pipeline.schemas import OCRResult, ErrorTroubleshooting
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -135,6 +135,10 @@ def run_pipeline(image_path: str, debug_mode: bool = False) -> OCRResult:
     # Denoise
     denoised = preprocessing.denoise_image(upscaled)
 
+    # Boost local contrast so dim segments survive binarization
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(4, 4))
+    denoised = clahe.apply(denoised)
+
     # ================================================================
     # STAGE 4: Binarization
     # ================================================================
@@ -157,7 +161,7 @@ def run_pipeline(image_path: str, debug_mode: bool = False) -> OCRResult:
     crop_height = processing_canvas.shape[0]
 
     # Pass 1: Vertical Snap (12% reach — fixes 'd', 'b', '8')
-    v_len = max(3, int(crop_height * 0.12))
+    v_len = max(3, int(crop_height * 0.18))
     v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, v_len))
     processing_canvas = cv2.morphologyEx(processing_canvas, cv2.MORPH_CLOSE, v_kernel)
     logger.debug(f"Stage 5a — Vertical snap: 1x{v_len} (crop height: {crop_height}px)")
@@ -175,9 +179,14 @@ def run_pipeline(image_path: str, debug_mode: bool = False) -> OCRResult:
 
     # Pass 4: Bridge Snapper — horizontal erosion to break hairline inter-digit bridges
     # Solid 'U' bottom survives; weak 1px bridges between 'U' and 'd' get snapped
-    snapper_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-    processing_canvas = cv2.erode(processing_canvas, snapper_kernel, iterations=1)
-    logger.debug("Stage 5d — Bridge snapper: 2x1 horizontal erosion")
+    # Only apply if there's enough white content to survive the erosion
+    white_ratio = cv2.countNonZero(processing_canvas) / (processing_canvas.shape[0] * processing_canvas.shape[1])
+    if white_ratio > 0.15:
+        snapper_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+        processing_canvas = cv2.erode(processing_canvas, snapper_kernel, iterations=1)
+        logger.debug(f"Stage 5d — Bridge snapper: 2x1 horizontal erosion (white_ratio={white_ratio:.2f})")
+    else:
+        logger.debug(f"Stage 5d — Bridge snapper SKIPPED (white_ratio={white_ratio:.2f} <= 0.15)")
 
     _debug_show("Step 5: Directional Closing + Bridge Snapper", processing_canvas, debug_mode)
 
@@ -204,6 +213,31 @@ def run_pipeline(image_path: str, debug_mode: bool = False) -> OCRResult:
     }
     raw_text, ocr_confidence = ocr_engine.extract_text(processed_img, config=ocr_config)
     
+    # ── Lightweight Fallback: if primary pipeline produced nothing,
+    #    retry on minimally-processed crop (skip binarization + morphology) ──
+    if not raw_text or not raw_text.strip():
+        logger.debug("Primary OCR returned empty — trying lightweight fallback on raw crop...")
+        
+        # Use the cropped image from Stage 2 (before heavy preprocessing)
+        if len(cropped.shape) == 3:
+            fallback_gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
+        else:
+            fallback_gray = cropped
+        
+        # Minimal processing: upscale → CLAHE → border
+        fallback_up = preprocessing.resize_image(fallback_gray, scale_percent=300)
+        fallback_clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        fallback_enhanced = fallback_clahe.apply(fallback_up)
+        fallback_final = cv2.copyMakeBorder(
+            fallback_enhanced, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=[255, 255, 255]
+        )
+        
+        fb_text, fb_conf = ocr_engine.extract_text(fallback_final, config=ocr_config)
+        if fb_text and fb_text.strip():
+            raw_text = fb_text
+            ocr_confidence = fb_conf
+            logger.debug(f"Fallback OCR produced: '{raw_text}' (conf={ocr_confidence:.2%})")
+
     ocr_end = time.perf_counter()
     ocr_time_ms = (ocr_end - ocr_start) * 1000
     logger.debug(f"Raw OCR output: {raw_text} (confidence: {ocr_confidence:.2%})")
