@@ -116,7 +116,7 @@
     "description": "Power failure during washing (Informational).",
     "troubleshooting": "Inform user, resume cycle if possible, ensure stable power supply."
   },
-  "SUdS": {
+  "SUd": {
     "name": "Suds Detected",
     "description": "Suds detected during wash (Informational).",
     "troubleshooting": "Reduce detergent amount, use HE detergent, run rinse cycle."
@@ -125,5 +125,35 @@
     "name": "Suds Detected",
     "description": "Suds detected during wash (Informational).",
     "troubleshooting": "Reduce detergent amount, use HE detergent, run rinse cycle."
+  },
+  "dE": {
+    "name": "Door Error",
+    "description": "Door switch error detected.",
+    "troubleshooting": "Check door switch, wiring, and door alignment."
+  },
+  "E7": {
+    "name": "Motor Input Error",
+    "description": "Motor input signal fault.",
+    "troubleshooting": "Check motor connections and hall sensor."
+  },
+  "4C": {
+    "name": "Water Temperature Sensor Error",
+    "description": "Abnormal water temperature sensor reading.",
+    "troubleshooting": "Check thermistor resistance, inspect sensor connections."
+  },
+  "E3A": {
+    "name": "Motor Drive Error (Variant)",
+    "description": "Motor drive fault variant — no response from hall sensor.",
+    "troubleshooting": "Check motor for overload, inspect hall sensor and connections."
+  },
+  "F24": {
+    "name": "Overheat Error",
+    "description": "Dryer overheat detected.",
+    "troubleshooting": "Clean vent, check thermistor, inspect exhaust path."
+  },
+  "H20": {
+    "name": "Water Supply Error",
+    "description": "No water detected during fill cycle.",
+    "troubleshooting": "Check water supply valves are open, inspect inlet hoses and filters."
   }
 }

@@ -16,8 +16,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from config import settings
-from ocr_pipeline import pipeline
-from ocr_pipeline.postprocess import DIRECT_MATCH, FUZZY_MATCH, NO_MATCH
+from src import pipeline
+from src.postprocess import DIRECT_MATCH, FUZZY_MATCH, NO_MATCH
 
 # Configure logging
 logging.basicConfig(
